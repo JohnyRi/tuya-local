@@ -482,6 +482,35 @@ class TuyaDpsConfig:
         mask = self.mask
         # Get raw value directly avoiding accidental scaling by decoded_value()
         raw_from_device = device.get_property(self.id)
+        # --- BEGIN JSON EXTRACTION ---
+        json_path = self._config.get("json_path")
+        if json_path and isinstance(raw_from_device, str):
+            import json
+            import re
+            try:
+                data = json.loads(raw_from_device)
+                for part in str(json_path).split('.'):
+                    match = re.match(r"(\w+)\[(\d+)\]", part)
+                    if match:
+                        key, idx = match.groups()
+                        val = data.get(key)
+                        if isinstance(val, list) and len(val) > int(idx):
+                            data = val[int(idx)]
+                        else:
+                            data = None
+                    else:
+                        if isinstance(data, dict):
+                            data = data.get(part)
+                        else:
+                            data = None
+                    if data is None:
+                        break
+                raw_from_device = data
+                if isinstance(raw_from_device, (float, str)) and str(raw_from_device).replace('.', '', 1).isdigit():
+                    raw_from_device = int(float(raw_from_device))
+            except Exception:
+                raw_from_device = None
+        # --- END JSON EXTRACTION ---
         bytevalue = self.decode_value(raw_from_device, device)
 
         if mask and isinstance(bytevalue, bytes):
