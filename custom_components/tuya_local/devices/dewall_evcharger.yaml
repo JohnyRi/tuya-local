@@ -238,3 +238,93 @@ entities:
           - dps_val: null
             value: false
           - value: true
+  - entity: sensor
+    name: L1 Voltage
+    class: voltage
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: L1[0]
+        unit: V
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: L1 Current
+    class: current
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: L1[1]
+        unit: A
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: L1 Power
+    class: power
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: L1[2]
+        unit: kW
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: Total Power
+    class: power
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: p
+        unit: kW
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: Session Energy
+    class: energy
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: e
+        unit: kWh
+        mapping:
+          - scale: 10
+        
+  - entity: sensor
+    name: Temperature
+    class: temperature
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: t
+        unit: C
+        mapping:
+          - scale: 10
+          
+  - entity: sensor
+    name: Session Duration
+    class: duration
+    category: diagnostic
+    dps:
+      - id: 102
+        type: integer
+        name: sensor
+        json_path: d
+        unit: s
+        mapping:
+          - scale: 10
