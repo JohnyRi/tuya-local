@@ -3,9 +3,11 @@ Implementation of Tuya infrared control devices
 """
 
 import asyncio
+import json
 import logging
+from typing import override
 
-from homeassistant.components.infrared import InfraredCommand, InfraredEntity
+from homeassistant.components.infrared import InfraredCommand, InfraredEmitterEntity
 from tinytuya.Contrib.IRRemoteControlDevice import IRRemoteControlDevice as IR
 
 from .device import TuyaLocalDevice
@@ -28,7 +30,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     )
 
 
-class TuyaLocalInfrared(TuyaLocalEntity, InfraredEntity):
+class TuyaLocalInfrared(TuyaLocalEntity, InfraredEmitterEntity):
     """Representation of a Tuya Local infrared control device."""
 
     def __init__(self, device: TuyaLocalDevice, config: TuyaEntityConfig):
@@ -42,38 +44,40 @@ class TuyaLocalInfrared(TuyaLocalEntity, InfraredEntity):
 
     async def async_send_command(self, command: InfraredCommand) -> None:
         """Handle sending an infrared command."""
+        if isinstance(command, TuyaRemoteCommand):
+            # If it's already a TuyaRemoteCommand, skip the round-trip conversion
+            tuya_command = command.code
+            _LOGGER.info("%s sending command: %s", self._config.config_id, tuya_command)
+            await self._ir_send(tuya_command)
+            return
+
         timings = command.get_raw_timings()
         split = {}
         raw = []
         i = 0
         for timing in timings:
-            if timing.high_us > 65535:
-                split[i] = timing.high_us - 65535
-                raw.append(65535)
-                raw.append(timing.low_us)
-            elif timing.low_us > 65535:
-                raw.append(timing.high_us)
-                raw.append(65535)
-                split[i + 2] = timing.low_us - 65535
+            utiming = abs(timing)
+            if utiming > 50000:
+                split[i] = utiming - 5000
+                raw.append(5000)
             else:
-                raw.append(timing.high_us)
-                raw.append(timing.low_us)
-            i += 2
+                raw.append(utiming)
+            i += 1
+
+        # HA format leaves off the last low timing, but Tuya needs it
+        if len(raw) % 2 == 1:
+            raw.append(5000)
 
         start = 0
         for s, t in split.items():
             tuya_command = IR.pulses_to_base64(raw[start:s])
-            _LOGGER.info(
-                "%s sending infrared command: %s", self._config.config_id, tuya_command
-            )
+            _LOGGER.info("%s sending command: %s", self._config.config_id, tuya_command)
             start = s
             await self._ir_send(tuya_command)
-            await asyncio.sleep(t / 1000000)
+            await asyncio.sleep(t / 1000000.0)
         if start < len(raw):
             tuya_command = IR.pulses_to_base64(raw[start:])
-            _LOGGER.info(
-                "%s sending infrared command: %s", self._config.config_id, tuya_command
-            )
+            _LOGGER.info("%s sending command: %s", self._config.config_id, tuya_command)
             await self._ir_send(tuya_command)
 
     async def _ir_send(self, tuya_command: str):
@@ -97,7 +101,7 @@ class TuyaLocalInfrared(TuyaLocalEntity, InfraredEntity):
             "head": "",
             "key1": "1" + command,
         }
-        return json_command
+        return json.dumps(json_command)
 
     def _package_multi_dp_send(self, command: str) -> dict:
         """Package the command for a multi DP send"""
@@ -106,3 +110,25 @@ class TuyaLocalInfrared(TuyaLocalEntity, InfraredEntity):
             f"{self._type_dp.id}": 0,
             f"{self._send_dp.id}": command,
         }
+
+
+# Used to send legacy remote learned commands via infrared entities.
+# This allows the learned commands to be sent via infrared entities
+# provided by other integrations.
+class TuyaRemoteCommand(InfraredCommand):
+    """Representation of a command in Tuya uncompressed format."""
+
+    def __init__(self, *, code: str):
+        super().__init__(modulation=38000, repeat_count=0)
+        self.code = code
+
+    @override
+    def get_raw_timings(self) -> list[int]:
+        """Get the raw timings for the command."""
+        # The code is expected to be an uncompressed Tuya IR code
+        try:
+            pulses = IR.base64_to_pulses(self.code)
+            even = True
+            return [p * -1 if (even := not even) else p for p in pulses]
+        except ValueError as err:
+            raise ValueError(f"Invalid code format: {repr(self.code)}") from err

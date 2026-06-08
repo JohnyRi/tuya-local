@@ -61,14 +61,14 @@ _signed_fmts = {
 }
 
 
-def _bytes_to_fmt(bytes, signed=False):
+def _bytes_to_fmt(b, signed=False):
     """Convert a byte count to an unpack format."""
     fmt = _signed_fmts if signed else _unsigned_fmts
 
-    if bytes in fmt:
-        return fmt[bytes]
+    if b in fmt:
+        return fmt[b]
     else:
-        return f"{bytes}s"
+        return f"{b}s"
 
 
 def _equal_or_in(value1, values2):
@@ -552,7 +552,7 @@ class TuyaDpsConfig:
         if self.rawtype == "bitfield" and matchdata:
             try:
                 return (int(value) & int(matchdata)) != 0
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 return False
         else:
             return str(value) == str(matchdata)
@@ -631,11 +631,25 @@ class TuyaDpsConfig:
             )
             return None
         for m in self._config["mapping"]:
-            if m.get("default", False):
+            if m.get("default", False) and not m.get("hidden", False):
                 return m.get("value", m.get("dps_val", None))
+            elif m.get("default", False):
+                _LOGGER.error(
+                    "%s: Default value for %s.%s is hidden",
+                    self._entity._device.config,
+                    self._entity.config_id,
+                    self.id,
+                )
             for c in m.get("conditions", {}):
-                if c.get("default", False):
+                if c.get("default", False) and not c.get("hidden", False):
                     return c.get("value", m.get("value", m.get("dps_val", None)))
+                elif c.get("default", False):
+                    _LOGGER.error(
+                        "%s: Default value for %s.%s is hidden",
+                        self._entity._device.config,
+                        self._entity.config_id,
+                        self.id,
+                    )
 
     def range(self, device, scaled=True):
         """Return the range for this dps if configured."""
@@ -939,10 +953,14 @@ class TuyaDpsConfig:
 
         return c_match
 
-    def get_values_to_set(self, device, value, pending_map={}):
+    def get_values_to_set(self, device, value, pending_map=None):
         """Return the dps values that would be set when setting to value"""
         result = value
         dps_map = {}
+
+        if pending_map is None:
+            pending_map = {}
+
         if self.readonly:
             return dps_map
 
@@ -1105,7 +1123,7 @@ class TuyaDpsConfig:
 
             if decoded_value is None:
                 raise ValueError("Cannot mask unknown current value")
-            elif isinstance(decoded_value, int):
+            if isinstance(decoded_value, int):
                 current_value = decoded_value
                 result = (current_value & ~mask) | (mask & int(result * mask_scale))
                 # Only convert back to bytes if the DP is actually hex/base64

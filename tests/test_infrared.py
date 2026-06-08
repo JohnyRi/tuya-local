@@ -1,7 +1,7 @@
 """Tests for the infrared entity."""
 
 import pytest
-from infrared_protocols.commands import NECCommand
+from infrared_protocols.commands.nec import NECCommand
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.tuya_local.const import (
@@ -123,10 +123,10 @@ async def test_async_send_command(mocker):
         device,
         {
             "201": (
-                "{'control': 'send_ir', 'type': 0, 'head': '', 'key1': '1KCOUETICMgIyAjI"
+                '{"control": "send_ir", "type": 0, "head": "", "key1": "1KCOUETICMgIyAjI'
                 "CMgKXBjICMgIyAjICMgIyAjICMgIyApcGMgIyAjIClwYyAjICMgIyAjIClwYyAjICMgKXBj"
                 "ICMgIyAjICMgKXBjICMgIyAjICMgKXBjIClwYyAjICMgIyAjIClwYyAjICMgKXBjIClwYyA"
-                "jICMgIyAjIClwYyApcGMgIAAA=='}"
+                'jICMgIyAjIClwYyApcGMgKIEw=="}'
             )
         },
     ):
