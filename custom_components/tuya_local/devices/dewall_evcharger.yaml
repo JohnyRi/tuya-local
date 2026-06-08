@@ -328,3 +328,49 @@ entities:
         unit: s
         mapping:
           - scale: 10
+  - entity: sensor
+    name: Firmware version
+    category: diagnostic
+    icon: "mdi:chip"
+    dps:
+      - id: 106
+        type: json
+        name: sensor
+        json_path: fv
+
+  - entity: sensor
+    name: CP Voltage
+    class: voltage
+    category: diagnostic
+    dps:
+      - id: 106
+        type: integer
+        name: sensor
+        json_path: cp
+        unit: V
+
+  - entity: sensor
+    name: Total Energy
+    class: energy
+    category: diagnostic
+    dps:
+      - id: 106
+        type: integer
+        name: sensor
+        json_path: e
+        unit: kWh
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: Charge cycles
+    category: diagnostic
+    icon: "mdi:counter"
+    dps:
+      - id: 106
+        type: integer
+        name: sensor
+        json_path: t
+        unit: cycles
+        mapping:
+          - scale: 10
