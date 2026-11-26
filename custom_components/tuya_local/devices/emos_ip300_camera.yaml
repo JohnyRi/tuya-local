@@ -4,7 +4,39 @@ products:
     manufacturer: EMOS
     model: IP-300
 entities:
+  - entity: switch
+    translation_key: camera_record
+    dps:
+      - id: 150
+        type: boolean
+        optional: true
+        name: switch
+  - entity: event
+    class: motion
+    dps:
+      - id: 115
+        type: base64
+        name: event
+        optional: true
+        mapping:
+          - dps_val: null
+            value: null
+          - value: detected
+      - id: 115
+        type: base64
+        optional: true
+        name: snapshot
+  - entity: switch
+    translation_key: motion_detection
+    category: config
+    dps:
+      - id: 134
+        type: boolean
+        optional: true
+        name: switch
   - entity: camera
+    # 2026-06-08
+    deprecated: switch_record, switch_motion_detection, event_motion
     dps:
       - id: 134
         type: boolean
@@ -89,9 +121,8 @@ entities:
           - dps_val: "2"
             value: "on"
   - entity: sensor
-    name: SD status
     class: enum
-    translation_key: status
+    translation_key: sd_status
     category: diagnostic
     dps:
       - id: 110
@@ -315,7 +346,7 @@ entities:
         name: alarm_message
         optional: true
   - entity: event
-    name: Notification
+    translation_key: notification
     dps:
       - id: 212
         type: base64

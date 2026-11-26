@@ -156,6 +156,7 @@
                             "chamber_low_temperature": "Température de la chambre basse",
                             "chamber_overheat": "Surchauffe de la chambre",
                             "communication_error": "Erreur de communication",
+                            "door_open": "Porte ouverte",
                             "drain_blocked": "Drain bloqué",
                             "evaporation_tray_low_temperature": "Température basse du plateau d'évaporation",
                             "evaporation_tray_overheat": "Surchauffe du plateau d'évaporation",
@@ -163,6 +164,8 @@
                             "firewall_sensor_fault": "Défaut du capteur de pare-feu",
                             "gas_leak": "Fuite de gaz",
                             "heating_fault": "Défaut de chauffage",
+                            "high_temperature": "Haute température",
+                            "low_temperature": "Basse température",
                             "no_water": "Pas d'eau",
                             "ok": "OK",
                             "overflow": "Débordement",
@@ -212,6 +215,13 @@
                 "state": {
                     "off": "OK",
                     "on": "Besoin de sel"
+                }
+            },
+            "water_flow": {
+                "name": "Flux d'eau",
+                "state": {
+                    "off": "Bloqué",
+                    "on": "Normal"
                 }
             }
         },
@@ -310,7 +320,9 @@
                             "fan_only": "Ventilation",
                             "heat": "Air Chaud",
                             "floor_cool": "Sol froid",
-                            "floor_heat": "Sol chaud"
+                            "floor_heat": "Sol chaud",
+                            "air_floor_cool": "Air et sol froid",
+                            "air_floor_heat": "Air et sol chaud"
                         }
                     }
                 }
@@ -333,10 +345,10 @@
                         "state": {
                             "smart_heat": "Chauffage Intelligent",
                             "quick_heat": "Chauffage Boost",
-                            "quiet_heat": "Chauffage Eco",
+                            "quiet_heat": "Chauffage Silencieux",
                             "smart_cool": "Froid Intelligent",
                             "quick_cool": "Froid Boost",
-                            "quiet_cool": "Froid Eco",
+                            "quiet_cool": "Froid Silencieux",
                             "auto": "Auto",
                             "smart": "Intelligent",
                             "quick": "Boost",
@@ -357,7 +369,9 @@
                             "program_2": "Programme 2",
                             "program_3": "Programme 3",
                             "standby": "Veille",
-                            "fan_only": "Ventilation"
+                            "fan_only": "Ventilation",
+                            "program": "Programme",
+                            "anti_frost": "Anti-gel"
                         }
                     }
                 }
@@ -409,6 +423,9 @@
         "event": {
             "alarm": {
                 "name": "Alarme"
+            },
+            "notification": {
+                "name": "Notification"
             }
         },
         "humidifier": {
@@ -437,6 +454,7 @@
                             "medium": "Moyen",
                             "high": "Haut",
                             "strong": "Fort",
+                            "fresh": "Frais",
                             "displayoff": "Affichage désactivé"
                         }
                     }
@@ -504,7 +522,7 @@
                             "auto": "Auto",
                             "manual": "Manuel",
                             "eco": "Écologique",
-                            "anti-condensation": "Anti-condensation",
+                            "anti_condensation": "Anti-condensation",
                             "extractor": "Extracteur",
                             "heat_recovery": "Récupération de chaleur",
                             "timer": "Minuteur",
@@ -674,6 +692,7 @@
                     "english_child": "English (Child)",
                     "french": "Français",
                     "german": "Deutsch",
+                    "hungarian": "Magyar",
                     "italian": "Italiano",
                     "japanese": "日本語",
                     "korean": "한국어",
@@ -688,7 +707,15 @@
                     "romanian": "Română",
                     "slovak": "Slovenčina",
                     "thai": "ไทย",
-                    "vietnamese": "Tiếng Việt"
+                    "vietnamese": "Tiếng Việt",
+                    "english_au": "English (Australia)",
+                    "english_ca": "English (Canada)",
+                    "english_in": "English (India)",
+                    "english_us": "English (United States)",
+                    "french_ca": "Français (Canada)",
+                    "hindi": "हिंदी",
+                    "spanish_us": "Español (Estados Unidos)",
+                    "off": "Désactivé"
                 }
             },
             "light_mode": {
@@ -699,7 +726,20 @@
                     "state": "État",
                     "locator": "Localisateur",
                     "auto": "Auto",
-                    "flash": "Flash"
+                    "flash": "Flash",
+                    "breathe": "Respirer",
+                    "random": "Aléatoire",
+                    "color": "Couleur",
+                    "favorite": "Favori",
+                    "multi_color": "Multi-couleur",
+                    "custom": "Personnalisé",
+                    "mode_1": "Mode 1",
+                    "mode_2": "Mode 2",
+                    "mode_3": "Mode 3",
+                    "door": "Porte",
+                    "24h": "24 heures",
+                    "30m": "30 minutes",
+                    "1m": "1 minute"
                 }
             },
             "mopping": {
@@ -788,6 +828,8 @@
                 "state": {
                     "cancel": "Annuler",
                     "continuous": "Continu",
+                    "custom": "Personnalisé",
+                    "immediate": "Immédiat",
                     "5s": "5 secondes",
                     "10s": "10 secondes",
                     "15s": "15 secondes",
@@ -860,7 +902,16 @@
                     "4d": "4 jours",
                     "5d": "5 jours",
                     "6d": "6 jours",
-                    "7d": "7 jours"
+                    "7d": "7 jours",
+                    "10d": "10 jours",
+                    "30d": "30 jours",
+                    "60d": "60 jours",
+                    "80d": "80 jours",
+                    "90d": "90 jours",
+                    "100d": "100 jours",
+                    "120d": "120 jours",
+                    "160d": "160 jours",
+                    "365d": "365 jours"
                 }
             },
             "temperature_unit": {
@@ -1150,6 +1201,12 @@
             "ambient_temperature": {
                 "name": "Température ambiante"
             },
+            "inlet_temperature": {
+                "name": "Température d'entrée"
+            },
+            "outlet_temperature": {
+                "name": "Température de sortie"
+            },
             "cleanliness": {
                 "name": "Propreté",
                 "state": {
@@ -1167,6 +1224,17 @@
                     "poor": "Mauvais",
                     "severe": "Grave",
                     "danger": "Danger"
+                }
+            },
+            "sd_status": {
+                "name": "État de la carte SD",
+                "state": {
+                    "fault": "Défaut",
+                    "formatting": "Formatage",
+                    "full": "Plein",
+                    "missing": "Manquant",
+                    "normal": "Normal",
+                    "unformatted": "Non formaté"
                 }
             },
             "status": {
@@ -1228,6 +1296,7 @@
                     "occupied": "Occupé",
                     "normal": "Normal",
                     "low": "Faible",
+                    "medium": "Moyen",
                     "high": "Haut",
                     "unwashed": "Non lavé",
                     "pre_washing": "Pré-lavage",
@@ -1247,8 +1316,6 @@
                     "full": "Plein",
                     "empty": "Vide",
                     "missing": "Manquant",
-                    "formatting": "Formatage",
-                    "unformatted": "Non formaté",
                     "failed": "Échoué",
                     "replying": "Répondre",
                     "playback": "Lecture",
@@ -1370,6 +1437,9 @@
                     "on": "Fermé"
                 }
             },
+            "camera_record": {
+                "name": "Enregistrement de la caméra"
+            },
             "do_not_disturb": {
                 "name": "Ne pas déranger"
             },
@@ -1456,6 +1526,9 @@
             },
             "snooze": {
                 "name": "Répétition"
+            },
+            "motion_detection": {
+                "name": "Détection de mouvement"
             },
             "watermark": {
                 "name": "Filigrane"

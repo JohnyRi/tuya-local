@@ -28,9 +28,6 @@ entities:
       - id: 106
         type: string
         name: humidity
-        range:
-          min: 40
-          max: 60
         mapping:
           - dps_val: "40"
             value: 40
@@ -80,6 +77,7 @@ entities:
         optional: true
         name: sensor
         unit: ugm3
+        class: measurement
   - entity: sensor
     translation_key: water_level
     class: enum

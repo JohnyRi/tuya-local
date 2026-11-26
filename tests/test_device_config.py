@@ -1,7 +1,10 @@
 """Test the config parser"""
 
+import gc
+import warnings
+
+import probatio as vol
 import pytest
-import voluptuous as vol
 from fuzzywuzzy import fuzz
 from homeassistant.components.sensor import SensorDeviceClass
 
@@ -25,7 +28,6 @@ PRODUCT_SCHEMA = vol.Schema(
         # Bluetooth and Zigbee devices have 8 character product ids
         # WiFi devices have 16 character product ids
         vol.Required("id"): vol.All(str, vol.Length(min=8, max=16)),
-        vol.Optional("name"): str,
         vol.Optional("manufacturer"): str,
         vol.Optional("model"): str,
         vol.Optional("model_id"): str,
@@ -59,7 +61,7 @@ CONDMAP_SCHEMA = vol.Schema(
 )
 COND_SCHEMA = CONDMAP_SCHEMA.extend(
     {
-        vol.Required("dps_val"): vol.Maybe(vol.Any(str, int, bool, list)),
+        vol.Required("dps_val"): vol.Maybe(vol.Any(str, int, bool, list, float)),
         vol.Optional("mapping"): [CONDMAP_SCHEMA],
     }
 )
@@ -142,6 +144,7 @@ ENTITY_SCHEMA = vol.Schema(
                 "lawn_mower",
                 "light",
                 "lock",
+                "media_player",
                 "number",
                 "remote",
                 "select",
@@ -261,6 +264,26 @@ KNOWN_DPS = {
             "jammed",
         ],
     },
+    "media_player": {
+        "required": [],
+        "optional": [
+            "switch",
+            "volume",
+            "mute",
+            "source",
+            "playback_state",
+            "play",
+            "pause",
+            "prev",
+            "next",
+            "stop",
+            "seek_position",
+            "clear_playlist",
+            "shuffle",
+            "repeat",
+            "sound_mode",
+        ],
+    },
     "number": {
         "required": ["value"],
         "optional": ["unit", "minimum", "maximum", "decimal"],
@@ -293,7 +316,7 @@ KNOWN_DPS = {
     },
     "valve": {
         "required": ["valve"],
-        "optional": ["switch"],
+        "optional": ["switch", "current_position"],
     },
     "water_heater": {
         "required": [],
@@ -317,6 +340,18 @@ def test_can_find_config_files():
         found = True
         break
     assert found
+
+
+def test_available_configs_closes_scandir_handle():
+    """Test that the scandir handle is closed when the generator is dropped."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        configs = available_configs()
+        next(configs)
+        del configs
+        gc.collect()
+
+    assert not [w for w in caught if issubclass(w.category, ResourceWarning)]
 
 
 def dp_match(condition, accounted, unaccounted, known, required=False):
@@ -429,15 +464,23 @@ def check_entity(entity, cfg, mocker):
     # for later checking
     for dp in entity.dps():
         line = dp._config.__line__
+        dp_rawtype = dp.rawtype
+        dp_type = dp.type
         assert dp._config.get("id") is not None, (
             f"\n::error file={fname},line={line}::dp id missing from {e} in {cfg}"
         )
-        assert dp._config.get("type") is not None, (
+        assert dp_rawtype is not None, (
             f"\n::error file={fname},line={line}::dp type missing from {e} in {cfg}"
+        )
+        assert isinstance(dp_type, type(int)), (
+            f"\n::error file={fname},line={line}::dp unrecognized {dp_rawtype} type from {e} in {cfg}"
         )
         assert dp._config.get("name") is not None, (
             f"\n::error file={fname},line={line}::dp name missing from {e} in {cfg}"
         )
+        # Allow hex and base64 to be matched to either str or int, since they can be masked
+        if dp_rawtype == "hex" or dp_rawtype == "base64":
+            dp_type = (str, int)
         extra.add(dp.name)
         mappings = dp._config.get("mapping", [])
         assert isinstance(mappings, list), (
@@ -449,11 +492,25 @@ def check_entity(entity, cfg, mocker):
             assert isinstance(conditions, list), (
                 f"\n::error file={fname},line={line}::conditions is not a list in {cfg}; entity {e}, dp {dp.name}"
             )
+            if m.get("invert") and dp_rawtype not in ["integer", "hex", "base64"]:
+                pytest.fail(
+                    f"\n::error file={fname},line={line}::invert is only valid for numeric values in {cfg}; entity {e}, dp {dp.name}"
+                )
+            dpv = m.get("dps_val")
+            if dpv is not None:
+                assert _typematch(dp_type, dpv), (
+                    f"\n::error file={fname},line={line}::dps_val {dpv} is not compatible with "
+                    f"type {dp_rawtype} in {cfg}; entity {e}, dp {dp.name}"
+                )
             for c in conditions:
                 if c.get("value_redirect"):
                     redirects.add(c.get("value_redirect"))
                 if c.get("value_mirror"):
                     redirects.add(c.get("value_mirror"))
+                if c.get("invert") and dp_rawtype not in ["integer", "hex", "base64"]:
+                    pytest.fail(
+                        f"\n::error file={fname},line={line}::invert is only valid for numeric values in {cfg}; entity {e}, dp {dp.name}"
+                    )
             if m.get("value_redirect"):
                 redirects.add(m.get("value_redirect"))
             if m.get("value_mirror"):
@@ -500,88 +557,88 @@ def check_entity(entity, cfg, mocker):
             )
 
 
-def test_config_files_parse(mocker):
+@pytest.mark.parametrize("cfg", available_configs())
+def test_config_file_parses(cfg, mocker):
     """
     All configs should be parsable and meet certain criteria
     """
-    for cfg in available_configs():
-        entities = []
-        parsed = TuyaDeviceConfig(cfg)
-        # Check for error messages or unparsed config
-        if isinstance(parsed, str) or isinstance(parsed._config, str):
-            pytest.fail(f"unparsable yaml in {cfg}")
+    entities = []
+    parsed = TuyaDeviceConfig(cfg)
+    # Check for error messages or unparsed config
+    if isinstance(parsed, str) or isinstance(parsed._config, str):
+        pytest.fail(f"unparsable yaml in {cfg}")
 
-        fname = f"custom_components/tuya_local/devices/{cfg}"
-        try:
-            YAML_SCHEMA(parsed._config)
-        except vol.MultipleInvalid as e:
-            messages = []
-            first_line = None
-            for err in e.errors:
-                path = ".".join([str(p) for p in err.path])
-                messages.append(f"{path}: {err.msg}")
-                if first_line is None:
-                    # voluptuous doesn't always seem to return line numbers
-                    if err.path and hasattr(err.path[-1], "__line__"):
-                        first_line = err.path[-1].__line__
+    fname = f"custom_components/tuya_local/devices/{cfg}"
+    try:
+        YAML_SCHEMA(parsed._config)
+    except vol.MultipleInvalid as e:
+        messages = []
+        first_line = None
+        for err in e.errors:
+            path = ".".join([str(p) for p in err.path])
+            messages.append(f"{path}: {err.msg}")
+            if first_line is None:
+                # voluptuous doesn't always seem to return line numbers
+                if err.path and hasattr(err.path[-1], "__line__"):
+                    first_line = err.path[-1].__line__
 
-            messages = "; ".join(messages)
-            if not first_line:
-                first_line = 1
+        messages = "; ".join(messages)
+        if not first_line:
+            first_line = 1
+        pytest.fail(
+            f"\n::error file={fname},line={first_line}::Validation error: {messages}"
+        )
+
+    assert parsed._config.get("name") is not None, (
+        f"\n::error file={fname},line=1::name missing from {cfg}"
+    )
+    count = 0
+    for entity in parsed.all_entities():
+        check_entity(entity, cfg, mocker)
+        # check entities are unique
+        if entity.config_id in entities:
             pytest.fail(
-                f"\n::error file={fname},line={first_line}::Validation error: {messages}"
+                f"\n::error file={fname},line={entity._config.__line__}::"
+                f"Duplicate entity {entity.config_id} in {cfg}"
             )
+        entities.append(entity.config_id)
 
-        assert parsed._config.get("name") is not None, (
-            f"\n::error file={fname},line=1::name missing from {cfg}"
-        )
-        count = 0
-        for entity in parsed.all_entities():
-            check_entity(entity, cfg, mocker)
-            # check entities are unique
-            if entity.config_id in entities:
-                pytest.fail(
-                    f"\n::error file={fname},line={entity._config.__line__}::"
-                    f"Duplicate entity {entity.config_id} in {cfg}"
-                )
-            entities.append(entity.config_id)
-
-            count += 1
-        assert count > 0, f"\n::error file={fname},line=1::No entities found in {cfg}"
+        count += 1
+    assert count > 0, f"\n::error file={fname},line=1::No entities found in {cfg}"
 
 
-def test_configs_can_be_matched():
+@pytest.mark.parametrize("cfg", available_configs())
+def test_config_can_be_matched(cfg):
     """Test that the config files can be matched to a device."""
-    for cfg in available_configs():
-        optional = set()
-        required = set()
-        parsed = TuyaDeviceConfig(cfg)
-        fname = f"custom_components/tuya_local/devices/{cfg}"
-        products = parsed._config.get("products")
-        # Configs with a product list can be matched by product id
-        if products:
-            p_match = False
-            for p in products:
-                if p.get("id"):
-                    p_match = True
-            if p_match:
-                continue
+    optional = set()
+    required = set()
+    parsed = TuyaDeviceConfig(cfg)
+    fname = f"custom_components/tuya_local/devices/{cfg}"
+    products = parsed._config.get("products")
+    # Configs with a product list can be matched by product id
+    if products:
+        p_match = False
+        for p in products:
+            if p.get("id"):
+                p_match = True
+        if p_match:
+            return
 
-        for entity in parsed.all_entities():
-            for dp in entity.dps():
-                if dp.optional:
-                    optional.add(dp.id)
-                else:
-                    required.add(dp.id)
+    for entity in parsed.all_entities():
+        for dp in entity.dps():
+            if dp.optional:
+                optional.add(dp.id)
+            else:
+                required.add(dp.id)
 
-        assert len(required) > 0, (
-            f"\n::error file={fname},line=1::No required dps found in {cfg}"
+    assert len(required) > 0, (
+        f"\n::error file={fname},line=1::No required dps found in {cfg}"
+    )
+
+    for dp in required:
+        assert dp not in optional, (
+            f"\n::error file={fname},line=1::Optional dp {dp} is required in {cfg}"
         )
-
-        for dp in required:
-            assert dp not in optional, (
-                f"\n::error file={fname},line=1::Optional dp {dp} is required in {cfg}"
-            )
 
 
 # Most of the device_config functionality is exercised during testing of
@@ -768,10 +825,11 @@ def test_values_with_mirror(mocker):
 
 
 def test_get_device_id():
-    """Test that check if device id is correct"""
+    """Test that child devices are scoped to their gateway."""
     assert "my-device-id" == get_device_id({"device_id": "my-device-id"})
     assert "sub-id" == get_device_id({"device_cid": "sub-id"})
-    assert "s" == get_device_id({"device_id": "d", "device_cid": "s"})
+    assert "d/s" == get_device_id({"device_id": "d", "device_cid": "s"})
+    assert "other/s" == get_device_id({"device_id": "other", "device_cid": "s"})
 
 
 def test_getting_masked_hex(mocker):
