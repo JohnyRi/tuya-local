@@ -5,7 +5,8 @@ products:
     model: Wall charger
   - id: gxrtu5vljdthtd3g
     manufacturer: dé
-    model: GD portable charger
+    model: EV Charger gd version
+
 entities:
   - entity: sensor
     translation_key: status
@@ -33,25 +34,44 @@ entities:
             value: paused
           - dps_val: STOP
             value: stopped
+
+  - entity: sensor
+    name: Metrics
+    category: diagnostic
+    dps:
       - id: 102
         type: json
         name: metrics
+
+  - entity: sensor
+    name: Self test
+    category: diagnostic
+    hidden: true
+    dps:
       - id: 103
         type: string
         optional: true
-        name: selftest
+        name: value
+
+  - entity: sensor
+    name: Alarm
+    category: diagnostic
+    hidden: true
+    dps:
       - id: 104
         type: string
         optional: true
-        name: alarm
+        name: value
+
+  - entity: sensor
+    name: Charge history
+    category: diagnostic
+    hidden: true
+    dps:
       - id: 105
         type: string
         optional: true
-        name: history
-      - id: 157
-        type: integer
-        optional: true
-        name: product_variant
+        name: value
 
   - entity: button
     name: Charge
@@ -76,7 +96,6 @@ entities:
 
   - entity: button
     name: Reset
-    icon: "mdi:refresh"
     category: config
     dps:
       - id: 141
@@ -150,6 +169,7 @@ entities:
     dps:
       - id: 155
         type: boolean
+        optional: true
         name: switch
       - id: 157
         type: integer
@@ -167,7 +187,41 @@ entities:
     dps:
       - id: 156
         type: boolean
+        optional: true
         name: switch
+
+  - entity: switch
+    name: Single phase mode
+    icon: "mdi:electric-switch"
+    category: config
+    dps:
+      - id: 110
+        type: boolean
+        optional: true
+        name: switch
+
+  - entity: number
+    name: Charge countdown
+    icon: "mdi:timer"
+    category: config
+    dps:
+      - id: 108
+        type: integer
+        optional: true
+        name: value
+        unit: min
+        range:
+          min: 0
+          max: 1440
+
+  - entity: binary_sensor
+    name: Plug charge
+    category: diagnostic
+    dps:
+      - id: 190
+        type: boolean
+        optional: true
+        name: sensor
 
   - entity: binary_sensor
     name: Unknown DPS188
@@ -176,6 +230,7 @@ entities:
     dps:
       - id: 188
         type: boolean
+        optional: true
         name: sensor
 
   - entity: number
@@ -221,6 +276,7 @@ entities:
         type: string
         optional: true
         name: value
+
   - entity: button
     name: Refresh
     category: config
@@ -238,13 +294,15 @@ entities:
           - dps_val: null
             value: false
           - value: true
+
+  # --- L1 Phase ---
   - entity: sensor
     name: L1 Voltage
     class: voltage
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: L1[0]
         unit: V
@@ -257,7 +315,7 @@ entities:
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: L1[1]
         unit: A
@@ -270,20 +328,101 @@ entities:
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: L1[2]
         unit: kW
         mapping:
           - scale: 10
 
+  # --- L2 Phase ---
+  - entity: sensor
+    name: L2 Voltage
+    class: voltage
+    category: diagnostic
+    dps:
+      - id: 102
+        type: json
+        name: sensor
+        json_path: L2[0]
+        unit: V
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: L2 Current
+    class: current
+    category: diagnostic
+    dps:
+      - id: 102
+        type: json
+        name: sensor
+        json_path: L2[1]
+        unit: A
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: L2 Power
+    class: power
+    category: diagnostic
+    dps:
+      - id: 102
+        type: json
+        name: sensor
+        json_path: L2[2]
+        unit: kW
+        mapping:
+          - scale: 10
+
+  # --- L3 Phase ---
+  - entity: sensor
+    name: L3 Voltage
+    class: voltage
+    category: diagnostic
+    dps:
+      - id: 102
+        type: json
+        name: sensor
+        json_path: L3[0]
+        unit: V
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: L3 Current
+    class: current
+    category: diagnostic
+    dps:
+      - id: 102
+        type: json
+        name: sensor
+        json_path: L3[1]
+        unit: A
+        mapping:
+          - scale: 10
+
+  - entity: sensor
+    name: L3 Power
+    class: power
+    category: diagnostic
+    dps:
+      - id: 102
+        type: json
+        name: sensor
+        json_path: L3[2]
+        unit: kW
+        mapping:
+          - scale: 10
+
+  # --- Totals and session data ---
   - entity: sensor
     name: Total Power
     class: power
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: p
         unit: kW
@@ -296,38 +435,40 @@ entities:
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: e
         unit: kWh
         mapping:
           - scale: 10
-        
+
   - entity: sensor
     name: Temperature
     class: temperature
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: t
         unit: C
         mapping:
           - scale: 10
-          
+
   - entity: sensor
     name: Session Duration
     class: duration
     category: diagnostic
     dps:
       - id: 102
-        type: integer
+        type: json
         name: sensor
         json_path: d
         unit: s
         mapping:
           - scale: 10
+
+  # --- DPS 106 sub-fields ---
   - entity: sensor
     name: Firmware version
     category: diagnostic
@@ -344,7 +485,7 @@ entities:
     category: diagnostic
     dps:
       - id: 106
-        type: integer
+        type: json
         name: sensor
         json_path: cp
         unit: V
@@ -355,7 +496,7 @@ entities:
     category: diagnostic
     dps:
       - id: 106
-        type: integer
+        type: json
         name: sensor
         json_path: e
         unit: kWh
@@ -368,7 +509,7 @@ entities:
     icon: "mdi:counter"
     dps:
       - id: 106
-        type: integer
+        type: json
         name: sensor
         json_path: t
         unit: cycles
