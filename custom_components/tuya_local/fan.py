@@ -65,9 +65,6 @@ class TuyaLocalFan(TuyaLocalEntity, FanEntity):
             if r and r[0] == 0:
                 self._support_flags |= FanEntityFeature.TURN_OFF
 
-        # Until the deprecation period ends (expected 2025.2)
-        self._enable_turn_on_off_backwards_compatibility = False
-
     @property
     def supported_features(self):
         """Return the features supported by this climate device."""
@@ -157,7 +154,7 @@ class TuyaLocalFan(TuyaLocalEntity, FanEntity):
         if self._speed_dps is None:
             return None
         if self._speed_dps.values(self._device):
-            return 100 / len(self._speed_dps.values(self._device))
+            return 100 / len([v for v in self._speed_dps.values(self._device) if v])
         r = self._speed_dps.range(self._device)
         scale = 100 / r[1] if r else 1.0
         return self._speed_dps.step(self._device) * scale

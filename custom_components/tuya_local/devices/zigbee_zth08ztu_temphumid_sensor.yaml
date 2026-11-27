@@ -23,10 +23,9 @@ entities:
         class: measurement
   - entity: sensor
     class: battery
-    category: diagnostic
     dps:
       - id: 3
-        type: integer
+        type: string
         name: sensor
         optional: true
         unit: "%"

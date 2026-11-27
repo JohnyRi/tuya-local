@@ -3,8 +3,6 @@
 Please report any [issues](https://github.com/make-all/tuya-local/issues) and feel free to raise [pull requests](https://github.com/make-all/tuya-local/pulls).
 [Many others](https://github.com/make-all/tuya-local/blob/main/ACKNOWLEDGEMENTS.md) have contributed their help already.
 
-[![BuyMeCoffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jasonrumney)
-
 This is a Home Assistant integration to support devices running Tuya
 firmware without going via the Tuya cloud.  Devices are supported
 over WiFi, limited support for devices connected via hubs is available.
@@ -32,16 +30,13 @@ easier to set up using that, or another more recent fork, as an alternative.
 
 ## Installation
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
-
-Installation is easiest via the [Home Assistant Community Store
-(HACS)](https://hacs.xyz/), which is the best place to get third-party
-integrations for Home Assistant. Once you have HACS set up, simply click the button below (requires My Homeassistant configured) or
+Installation is easiest via the Marketplace, which is the best place to get third-party
+integrations for Home Assistant. Simply click the button below (requires My Homeassistant configured) or
 follow the [instructions for adding a custom
-repository](https://hacs.xyz/docs/faq/custom_repositories) and then
+repository](https://www.home-assistant.io/integrations/marketplace/#custom-repositories) and then
 the integration will be available to install like any other.
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=make-all&repository=tuya-local&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=make-all&repository=tuya-local&category=integration)
 
 ## Configuration
 
@@ -265,7 +260,9 @@ compatible with this scheme.
 
 Tuya IR and RF blasters are exposed as remote entities and support learning and
 sending commands via the standard Home Assistant remote services. IR blasters are
-also exposed as general `infrared` emitters.
+also exposed as general `infrared` emitters, and learned commands can be sent to
+other `infrared` emitters using the tuya-local specific "Send Learned IR command"
+service.
 
 ### Learning commands
 
@@ -286,15 +283,19 @@ other HA integrations, including
 learning remote commands via an ESPHome receiver and sending them to
 any supported `infrared` emitter.
 
-To send learned commands, you use the `remote.send_command` service
-with the same `command` and `device` values used when learning. You
-can also send known Tuya codes directly without learning first:
+To send learned commands using the same `remote` entity, you use the
+`remote.send_command` service with the same `command` and `device`
+values used when learning. You can also send known Tuya codes directly
+without learning first:
 
 - **IR inline code**: prefix with `b64:` followed by the base64-encoded IR code
 - **RF inline code**: prefix with `rf:` followed by the base64-encoded RF code
 
-<!-- There is also a special `send_learned_ir_command` service for sending commands
-learned by the `remote` entity to any `infrared` emitter (including non-Tuya ones). -->
+There is also a special `send_learned_ir_command` service for sending commands
+learned by the `remote` entity to any `infrared` emitter (including non-Tuya ones).
+To use this, you must specify the `remote` entity the learned command was saved
+with, the target `infrared` emitter entity, and the `command` and optional `device`
+the command was saved as.
 
 
 ### UI

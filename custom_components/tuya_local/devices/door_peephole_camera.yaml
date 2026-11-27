@@ -6,7 +6,23 @@ products:
     manufacturer: HQCAM
     model: 2MP peephole camera
 entities:
+  - entity: switch
+    translation_key: camera_record
+    dps:
+      - id: 150
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    translation_key: motion_detection
+    category: config
+    dps:
+      - id: 134
+        type: boolean
+        optional: true
+        name: switch
   - entity: camera
+    deprecated: switch_camera_record, switch_motion_detection  # 2026-06-08
     dps:
       - id: 134
         type: boolean
@@ -66,9 +82,8 @@ entities:
           - dps_val: "2"
             value: "on"
   - entity: sensor
-    name: SD status
     class: enum
-    translation_key: status
+    translation_key: sd_status
     category: diagnostic
     dps:
       - id: 110
@@ -176,7 +191,7 @@ entities:
         optional: true
         name: message
   - entity: event
-    name: Notification
+    translation_key: notification
     category: diagnostic
     dps:
       - id: 212

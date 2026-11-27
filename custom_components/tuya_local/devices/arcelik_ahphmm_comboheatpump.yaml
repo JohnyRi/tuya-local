@@ -142,7 +142,7 @@ entities:
         type: boolean
         name: available
       - id: 109
-        type: boolean
+        type: string
         name: operation_mode
         mapping:
           - dps_val: hot_water
@@ -319,7 +319,7 @@ entities:
         name: sensor
 
   - entity: sensor
-    name: Outlet temperature
+    translation_key: outlet_temperature
     class: temperature
     category: diagnostic
     dps:

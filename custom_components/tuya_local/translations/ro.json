@@ -156,6 +156,7 @@
                             "chamber_low_temperature": "Temperatură scăzută cameră",
                             "chamber_overheat": "Supraîncălzire cameră",
                             "communication_error": "Eroare de comunicare",
+                            "door_open": "Ușă deschisă",
                             "drain_blocked": "Scurgere blocată",
                             "evaporation_tray_low_temperature": "Temperatură scăzută tavă de evaporare",
                             "evaporation_tray_overheat": "Supraîncălzire tavă de evaporare",
@@ -163,6 +164,8 @@
                             "firewall_sensor_fault": "Defecțiune senzor firewall",
                             "gas_leak": "Scurgere de gaz",
                             "heating_fault": "Defecțiune încălzire",
+                            "high_temperature": "Temperatură ridicată",
+                            "low_temperature": "Temperatură scăzută",
                             "no_water": "Fără apă",
                             "ok": "OK",
                             "overflow": "Revărsare",
@@ -212,6 +215,13 @@
                 "state": {
                     "off": "OK",
                     "on": "Adăugați sare"
+                }
+            },
+            "water_flow": {
+                "name": "Flux de apă",
+                "state": {
+                    "off": "Blocată",
+                    "on": "Normal"
                 }
             }
         },
@@ -310,7 +320,9 @@
                             "fan_only": "Ventilator",
                             "heat": "Aer cald",
                             "floor_cool": "Răcire podea",
-                            "floor_heat": "Încălzire podea"
+                            "floor_heat": "Încălzire podea",
+                            "air_floor_cool": "Răcire aer + podea",
+                            "air_floor_heat": "Încălzire aer + podea"
                         }
                     }
                 }
@@ -357,7 +369,9 @@
                             "program_2": "Program 2",
                             "program_3": "Program 3",
                             "standby": "În așteptare",
-                            "fan_only": "Doar ventilator"
+                            "fan_only": "Doar ventilator",
+                            "program": "Program",
+                            "anti_frost": "Anti-îngheț"
                         }
                     }
                 }
@@ -409,6 +423,9 @@
         "event": {
             "alarm": {
                 "name": "Alarmă"
+            },
+            "notification": {
+                "name": "Notificare"
             }
         },
         "humidifier": {
@@ -437,6 +454,7 @@
                             "medium": "Mediu",
                             "high": "Ridicat",
                             "strong": "Puternic",
+                            "fresh": "Proaspăt",
                             "displayoff": "Afișaj oprit"
                         }
                     }
@@ -504,7 +522,7 @@
                             "auto": "Auto",
                             "manual": "Manual",
                             "eco": "Eco",
-                            "anti-condensation": "Anti-condens",
+                            "anti_condensation": "Anti-condens",
                             "extractor": "Extractor",
                             "heat_recovery": "Recuperare căldură",
                             "timer": "Temporizator",
@@ -674,6 +692,7 @@
                     "english_child": "English (Child)",
                     "french": "Français",
                     "german": "Deutsch",
+                    "hungarian": "Magyar",
                     "italian": "Italiano",
                     "japanese": "日本語",
                     "korean": "한국어",
@@ -688,7 +707,15 @@
                     "romanian": "Română",
                     "slovak": "Slovenčina",
                     "thai": "ไทย",
-                    "vietnamese": "Tiếng Việt"
+                    "vietnamese": "Tiếng Việt",
+                    "english_au": "English (Australia)",
+                    "english_ca": "English (Canada)",
+                    "english_in": "English (India)",
+                    "english_us": "English (United States)",
+                    "french_ca": "Français (Canada)",
+                    "hindi": "हिंदी",
+                    "spanish_us": "Español (Estados Unidos)",
+                    "off": "Oprit"
                 }
             },
             "light_mode": {
@@ -699,7 +726,20 @@
                     "state": "Stare",
                     "locator": "Locator",
                     "auto": "Auto",
-                    "flash": "Flash"
+                    "flash": "Flash",
+                    "breathe": "Respirație",
+                    "random": "Aleatoriu",
+                    "color": "Culoare",
+                    "favorite": "Favorit",
+                    "multi_color": "Multicolor",
+                    "custom": "Personalizat",
+                    "mode_1": "Mod 1",
+                    "mode_2": "Mod 2",
+                    "mode_3": "Mod 3",
+                    "door": "Ușă",
+                    "24h": "24h",
+                    "30m": "30m",
+                    "1m": "1m"
                 }
             },
             "mopping": {
@@ -788,6 +828,8 @@
                 "state": {
                     "cancel": "Anulează",
                     "continuous": "Continuu",
+                    "custom": "Personalizat",
+                    "immediate": "Imediat",
                     "5s": "5 secunde",
                     "10s": "10 secunde",
                     "15s": "15 secunde",
@@ -860,7 +902,16 @@
                     "4d": "4 zile",
                     "5d": "5 zile",
                     "6d": "6 zile",
-                    "7d": "7 zile"
+                    "7d": "7 zile",
+                    "10d": "10 zile",
+                    "30d": "30 zile",
+                    "60d": "60 zile",
+                    "80d": "80 zile",
+                    "90d": "90 zile",
+                    "100d": "100 zile",
+                    "120d": "120 zile",
+                    "160d": "160 zile",
+                    "365d": "365 zile"
                 }
             },
             "temperature_unit": {
@@ -1150,6 +1201,12 @@
             "ambient_temperature": {
                 "name": "Temperatură ambientală"
             },
+            "inlet_temperature": {
+                "name": "Temperatură intrare"
+            },
+            "outlet_temperature": {
+                "name": "Temperatură ieșire"
+            },
             "cleanliness": {
                 "name": "Curățenie",
                 "state": {
@@ -1167,6 +1224,17 @@
                     "poor": "Slab",
                     "severe": "Sever",
                     "danger": "Periculos"
+                }
+            },
+            "sd_status": {
+                "name": "Stare card SD",
+                "state": {
+                    "fault": "Defecțiune",
+                    "formatting": "Formatare",
+                    "full": "Plin",
+                    "missing": "Lipsă",
+                    "normal": "Normal",
+                    "unformatted": "Neformatat"
                 }
             },
             "status": {
@@ -1228,6 +1296,7 @@
                     "occupied": "Ocupat",
                     "normal": "Normal",
                     "low": "Scăzut",
+                    "medium": "Mediu",
                     "high": "Ridicat",
                     "unwashed": "Nespălat",
                     "pre_washing": "Pre-spălare",
@@ -1247,8 +1316,6 @@
                     "full": "Plin",
                     "empty": "Gol",
                     "missing": "Lipsă",
-                    "formatting": "Formatare",
-                    "unformatted": "Neformatat",
                     "failed": "Eșuat",
                     "replying": "Răspuns",
                     "playback": "Redare",
@@ -1370,6 +1437,9 @@
                     "on": "Închis"
                 }
             },
+            "camera_record": {
+                "name": "Înregistrare cameră"
+            },
             "do_not_disturb": {
                 "name": "Nu deranjați"
             },
@@ -1457,6 +1527,9 @@
             "snooze": {
                 "name": "Amânare"
             },
+            "motion_detection": {
+                "name": "Detectare mișcare"
+            },
             "watermark": {
                 "name": "Filigran"
             }
@@ -1539,3 +1612,4 @@
         }
     }
 }
+

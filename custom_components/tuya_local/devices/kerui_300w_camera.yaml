@@ -5,10 +5,49 @@ products:
     model: JS-P162 300W
   - id: o9jlvpqqunankygf
     manufacturer: Fuers
-    model: "5MP"
-    name: Indoor camera
+    model: "5MP indoor"
 entities:
+  - entity: switch
+    translation_key: camera_record
+    dps:
+      - id: 150
+        type: boolean
+        optional: true
+        name: switch
+  - entity: event
+    translation_key: notification
+    dps:
+      - id: 212
+        type: base64
+        name: event
+        optional: true
+        mapping:
+          - dps_val: null
+            value: null
+          - value: alert
+      - id: 212
+        type: utf16b64
+        optional: true
+        name: message
+  - entity: switch
+    translation_key: motion_detection
+    category: config
+    dps:
+      - id: 134
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Camera privacy
+    icon: "mdi:incognito"
+    dps:
+      - id: 105
+        type: boolean
+        name: switch
   - entity: camera
+    deprecated: >-
+      switch_camera_record, switch_camera_privacy, event_motion,
+      event_notification, switch_motion_detection
     dps:
       - id: 105
         name: switch
@@ -95,11 +134,9 @@ entities:
           - dps_val: "2"
             value: "on"
   - entity: sensor
-    name: SD status
     class: enum
-    translation_key: status
+    translation_key: sd_status
     category: diagnostic
-    icon: "mdi:micro-sd"
     dps:
       - id: 110
         type: integer

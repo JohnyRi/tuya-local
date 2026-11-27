@@ -3,7 +3,32 @@ products:
   - id: b60fclvud3xtcufm
     model: SC116-WZ3A
 entities:
+  - entity: switch
+    translation_key: camera_record
+    dps:
+      - id: 150
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    translation_key: motion_detection
+    category: config
+    dps:
+      - id: 134
+        type: boolean
+        optional: true
+        name: switch
+  - entity: switch
+    name: Camera privacy
+    icon: "mdi:incognito"
+    dps:
+      - id: 105
+        type: boolean
+        name: switch
   - entity: camera
+    # 2026-06-08
+    deprecated: >-
+      switch_camera_privacy, switch_camera_record, switch_motion_detection
     dps:
       - id: 105
         type: boolean
@@ -75,11 +100,9 @@ entities:
           - dps_val: "2"
             value: "on"
   - entity: sensor
-    name: SD status
     class: enum
-    translation_key: status
+    translation_key: sd_status
     category: diagnostic
-    icon: "mdi:micro-sd"
     dps:
       - id: 110
         type: integer
